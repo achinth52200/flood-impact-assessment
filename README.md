@@ -344,6 +344,27 @@ EARLY_STOP   = 12          # patience epochs
 
 Made with ❤️ for disaster response and humanitarian AI
 
+## 👥 Contributors
+
+<table>
+<tr>
+  <td align="center">
+    <a href="https://github.com/achinth52200">
+      <img src="https://github.com/achinth52200.png" width="80" alt="achinth52200"/><br/>
+      <b>achinth52200</b>
+    </a><br/>
+    <sub>🧑‍💻 Project Author</sub>
+  </td>
+  <td align="center">
+    <img src="https://img.shields.io/badge/🤖-Claude_Sonnet-EE4C2C?style=flat-square" /><br/>
+    <b>Claude (Anthropic)</b><br/>
+    <sub>🤖 AI Pair Programmer</sub>
+  </td>
+</tr>
+</table>
+
+---
+
 [![GitHub](https://img.shields.io/badge/GitHub-achinth52200-181717?style=for-the-badge&logo=github)](https://github.com/achinth52200/flood-impact-assessment)
 [![Render](https://img.shields.io/badge/Live_Demo-Render-46E3B7?style=for-the-badge&logo=render)](https://flood-impact-assessment.onrender.com)
 

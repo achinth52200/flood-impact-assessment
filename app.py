@@ -1,9 +1,16 @@
 """
 Streamlit UI — Flood Impact Assessment
 Launch: streamlit run app.py
+Render: start command uses $PORT automatically via render.yaml
 """
-import io, sys, tempfile
+import io, os, sys, tempfile
 from pathlib import Path
+
+# Ensure model exists on first cloud start
+_ckpt = Path(__file__).parent / "models" / "checkpoints" / "best_model.pth"
+if not _ckpt.exists():
+    import subprocess
+    subprocess.run([sys.executable, "setup_model.py"], check=False)
 
 import numpy as np
 import streamlit as st

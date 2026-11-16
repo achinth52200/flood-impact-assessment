@@ -7,8 +7,11 @@ textColor                = "#e6edf3"
 font                     = "sans serif"
 
 [server]
-maxUploadSize = 500
-headless      = true
+# port and address are set via CLI flags in render.yaml (uses $PORT)
+maxUploadSize   = 500
+headless        = true
+enableCORS      = false
+enableXsrfProtection = true
 
 [browser]
 gatherUsageStats = false

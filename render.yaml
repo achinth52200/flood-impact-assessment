@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: flood-impact-assessment
+    runtime: python
+    region: oregon
+    plan: standard          # 2 GB RAM — required for PyTorch + ResNet-34
+    buildCommand: |
+      pip install -r requirements_deploy.txt &&
+      python setup_model.py
+    startCommand: >
+      streamlit run app.py
+      --server.port $PORT
+      --server.address 0.0.0.0
+      --server.headless true
+    healthCheckPath: /_stcore/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.11.9"
+      - key: HF_REPO          # optional: set in Render dashboard to load pretrained weights
+        value: ""              # e.g. yourname/flood-model
+      - key: HF_HUB_DISABLE_SYMLINKS_WARNING
+        value: "1"

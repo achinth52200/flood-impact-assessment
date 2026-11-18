@@ -211,6 +211,89 @@ if "Predict" in page:
 
             st.download_button("⬇ Download PNG", fig_png(fig),
                                Path(up.name).stem+"_flood.png","image/png")
+
+            # ── Building Impact Analysis ──────────────────────────────────────
+            st.divider()
+            st.subheader("🏘️ Building Impact Analysis")
+            with st.spinner("Estimating affected buildings…"):
+                from utils.building_impact import building_impact
+                ndbi_t = st.slider("Built-up sensitivity (NDBI threshold)",
+                                   -0.1, 0.3, 0.05, 0.01,
+                                   help="Lower = detect more buildings; higher = only dense urban")
+                impact = building_impact(arr, mask, ndbi_thresh=ndbi_t)
+
+            b1,b2,b3,b4 = st.columns(4)
+            b1.metric("🏠 Total Buildings (est.)",  f"{impact['total_buildings']:,}")
+            b2.metric("🚨 Affected Buildings",       f"{impact['affected_buildings']:,}",
+                      delta=f"{impact['affected_pct']:.1f}% of total",
+                      delta_color="inverse")
+            b3.metric("🌊 Flooded Area",             f"{impact['flooded_area_km2']:.3f} km²")
+            b4.metric("🏚️ Affected Built-up Area",   f"{impact['affected_area_km2']:.4f} km²")
+
+            with st.expander("🗺️ Building Impact Map", expanded=True):
+                fig_b, axes_b = plt.subplots(1, 3, figsize=(15, 5), facecolor="#0d1117")
+                fig_b.suptitle("Building Impact Overview", color="white",
+                               fontsize=13, fontweight="bold")
+                for ax in axes_b:
+                    ax.axis("off"); ax.set_facecolor("#0d1117")
+
+                # Panel 1: RGB + built-up overlay
+                axes_b[0].imshow(rgb)
+                bu_ov = np.zeros((*impact["buildup_mask"].shape, 4))
+                bu_ov[impact["buildup_mask"] == 1] = (1.0, 0.8, 0.0, 0.5)
+                axes_b[0].imshow(bu_ov, interpolation="nearest")
+                axes_b[0].set_title("Built-up Areas (yellow)", color="#e6edf3", fontsize=11)
+
+                # Panel 2: RGB + flood overlay
+                axes_b[1].imshow(rgb)
+                fl_ov = np.zeros((*mask.shape, 4))
+                fl_ov[mask == 1] = (0.1, 0.5, 1.0, 0.6)
+                axes_b[1].imshow(fl_ov, interpolation="nearest")
+                axes_b[1].set_title("Flood Extent (blue)", color="#e6edf3", fontsize=11)
+
+                # Panel 3: Combined — affected buildings in red
+                axes_b[2].imshow(rgb)
+                combo = np.zeros((*mask.shape, 4))
+                combo[impact["buildup_mask"] == 1] = (1.0, 0.8, 0.0, 0.4)   # built-up yellow
+                combo[mask == 1] = (0.1, 0.5, 1.0, 0.4)                      # flood blue
+                combo[impact["affected_mask"] == 1] = (1.0, 0.1, 0.1, 0.8)  # affected RED
+                axes_b[2].imshow(combo, interpolation="nearest")
+                axes_b[2].set_title(
+                    f"Affected Buildings (red) — {impact['affected_buildings']:,} est.",
+                    color="#e6edf3", fontsize=11)
+                axes_b[2].legend(handles=[
+                    mpatches.Patch(color=(1.0,0.8,0.0), label="Built-up"),
+                    mpatches.Patch(color=(0.1,0.5,1.0), label="Flooded"),
+                    mpatches.Patch(color=(1.0,0.1,0.1), label="Affected Buildings"),
+                ], loc="lower right", fontsize=8, facecolor="#161b22",
+                   labelcolor="white", edgecolor="#30363d")
+
+                plt.tight_layout()
+                st.pyplot(fig_b, use_container_width=True)
+                plt.close(fig_b)
+
+                # NDBI index map
+                with st.expander("📊 NDBI / NDVI / NDWI Index Maps"):
+                    fig_idx, axes_idx = plt.subplots(1, 3, figsize=(15, 4),
+                                                     facecolor="#0d1117")
+                    for ax in axes_idx: ax.axis("off")
+                    cmap_pairs = [("NDBI","RdYlGn_r"), ("NDVI","RdYlGn"), ("NDWI","Blues")]
+                    for ax, (name, cmap) in zip(axes_idx, cmap_pairs):
+                        im = ax.imshow(impact["indices"][name], cmap=cmap, vmin=-1, vmax=1)
+                        ax.set_title(name, color="white", fontsize=11)
+                        plt.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+                    fig_idx.patch.set_facecolor("#0d1117")
+                    plt.tight_layout()
+                    st.pyplot(fig_idx, use_container_width=True)
+                    plt.close(fig_idx)
+
+                st.download_button(
+                    "⬇ Download Impact Map",
+                    fig_png(fig_b),
+                    Path(up.name).stem + "_building_impact.png",
+                    "image/png"
+                )
+
         elif up and not sel_ckpt:
             st.warning("Train first: `python train.py`")
 

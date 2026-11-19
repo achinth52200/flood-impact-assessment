@@ -215,6 +215,50 @@ if "Predict" in page:
             # ── Building Impact Analysis ──────────────────────────────────────
             st.divider()
             st.subheader("🏘️ Building Impact Analysis")
+
+            with st.expander("ℹ️ How does this work? — NDBI explained", expanded=False):
+                st.markdown("""
+**NDBI — Normalized Difference Built-up Index**
+
+$$\\text{NDBI} = \\frac{\\text{SWIR} - \\text{NIR}}{\\text{SWIR} + \\text{NIR}}$$
+
+| Band | Sentinel-2 | Wavelength | Role |
+|------|-----------|------------|------|
+| SWIR | B11 (ch 6) | 1610 nm | High reflectance from **concrete, roads, rooftops** |
+| NIR  | B8  (ch 5) | 842 nm  | High reflectance from **vegetation** |
+
+**Key insight:** Urban materials (concrete, metal, asphalt) reflect more **shortwave infrared** than
+vegetation. So NDBI > 0 → built-up land; NDBI < 0 → vegetation / water.
+
+**Step-by-step pipeline:**
+
+```
+7-channel tile
+     │
+     ├─ ch5 (NIR)  ─┐
+     └─ ch6 (SWIR) ─┴──► NDBI = (SWIR−NIR)/(SWIR+NIR)
+                           │
+                     NDBI > 0.05 AND NDVI < 0.2
+                           │
+                    Built-up pixel mask  ◄── yellow on map
+                           │
+                     ∩ (intersect with)
+                           │
+                    Flood mask (from U-Net) ◄── blue on map
+                           │
+                    Affected buildings  ◄── RED on map
+                           │
+                    Count ÷ 2 pixels/building = estimated buildings
+```
+
+**Supporting indices also computed:**
+- **NDVI** = `(NIR − Red) / (NIR + Red)` → vegetation (filters out trees from buildings)
+- **NDWI** = `(Green − NIR) / (Green + NIR)` → open water (cross-check with SAR flood mask)
+
+**Limitation:** Without GPS coordinates, building count is estimated at ~1 building per 2 pixels
+(≈150 m² at 10 m/pixel resolution). Real counts need OpenStreetMap footprint overlay.
+""")
+
             with st.spinner("Estimating affected buildings…"):
                 from utils.building_impact import building_impact
                 ndbi_t = st.slider("Built-up sensitivity (NDBI threshold)",

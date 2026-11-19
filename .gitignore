@@ -8,8 +8,14 @@ venv/
 # Large data files — do NOT commit raw satellite imagery
 data/raw/
 data/processed/
+data/processed_synthetic/
 data/sample/
 outputs/
+sample_uploads/
+report_figures/
+models/checkpoints_synthetic/
+*.docx
+*.pdf
 
 # Keep checkpoints out of git — upload to HF Hub instead
 models/checkpoints/*.pth

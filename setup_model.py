@@ -41,14 +41,14 @@ def ensure_model():
     print("No checkpoint found. Training on synthetic data (demo mode) …")
     print("Set HF_REPO env var to load a pretrained checkpoint instead.\n")
 
-    # Generate tiles
+    # Generate tiles — keep small so build finishes in < 10 min on Render
     from generate_sample_data import main as gen_main
     import argparse
-    sys.argv = ["generate_sample_data.py", "--n_tiles", "80"]
+    sys.argv = ["generate_sample_data.py", "--n_tiles", "60"]
     gen_main()
 
-    # Train for a few epochs
-    sys.argv = ["train.py", "--epochs", "10", "--batch_size", "4", "--workers", "0"]
+    # Train for a few epochs only (demo quality, keeps build fast)
+    sys.argv = ["train.py", "--epochs", "5", "--batch_size", "4", "--workers", "0"]
     from train import main as train_main
     train_main()
     return BEST_CKPT.exists()

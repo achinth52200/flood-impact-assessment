@@ -9,8 +9,11 @@ from pathlib import Path
 # Ensure model exists on first cloud start
 _ckpt = Path(__file__).parent / "models" / "checkpoints" / "best_model.pth"
 if not _ckpt.exists():
-    import subprocess
-    subprocess.run([sys.executable, "setup_model.py"], check=False)
+    try:
+        import subprocess
+        subprocess.run([sys.executable, "setup_model.py"], check=False, timeout=600)
+    except Exception:
+        pass  # app starts anyway — user sees "no checkpoint" warning
 
 import numpy as np
 import streamlit as st

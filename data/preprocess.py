@@ -118,8 +118,11 @@ def sar_preprocess(arr: np.ndarray, db_scale: bool = True) -> np.ndarray:
       2. Clip to [-30, 0] dB range
       3. Normalise to [0, 1]
     """
-    arr = np.where(arr > 0, arr, 1e-10)   # avoid log(0)
-    if db_scale:
+    arr = np.nan_to_num(arr, nan=-30.0)
+    # Sen1Floods11 S1Hand images are already in dB (mostly negative values);
+    # only convert when the input is in linear power scale.
+    if db_scale and np.nanmin(arr) >= 0:
+        arr = np.where(arr > 0, arr, 1e-10)   # avoid log(0)
         arr = 10.0 * np.log10(arr)
     arr = np.clip(arr, -30.0, 0.0)
     arr = (arr + 30.0) / 30.0             # → [0, 1]
